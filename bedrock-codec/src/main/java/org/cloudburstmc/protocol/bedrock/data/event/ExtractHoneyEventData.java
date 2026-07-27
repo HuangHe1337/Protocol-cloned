@@ -5,8 +5,11 @@ import lombok.NoArgsConstructor;
 
 /**
  * Represents extract honey event data used in the Bedrock protocol.
+ *
+ * @deprecated since v1001
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
+@Deprecated
 public class ExtractHoneyEventData implements EventData {
     public static final ExtractHoneyEventData INSTANCE = new ExtractHoneyEventData();
 

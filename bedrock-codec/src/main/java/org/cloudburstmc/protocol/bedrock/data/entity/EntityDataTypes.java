@@ -321,4 +321,12 @@ public class EntityDataTypes {
      * @since v924
      */
     public static final EntityDataType<Integer> AIM_ASSIST_PRIORITY_ACTOR_ID = new EntityDataType<>(Integer.class, "AIM_ASSIST_PRIORITY_ACTOR_ID");
+    /**
+     * @since v975
+     */
+    public static final EntityDataType<Long> RESERVED_139 = new EntityDataType<>(Long.class, "RESERVED_139");
+    /**
+     * @since v975
+     */
+    public static final EntityDataType<Float> NAMEPLATE_RENDER_DISTANCE_MAX = new EntityDataType<>(Float.class, "NAMEPLATE_RENDER_DISTANCE_MAX");
 }

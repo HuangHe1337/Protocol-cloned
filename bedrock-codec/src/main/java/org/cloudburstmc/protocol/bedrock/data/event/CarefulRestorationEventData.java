@@ -5,8 +5,11 @@ import lombok.NoArgsConstructor;
 
 /**
  * Represents careful restoration event data used in the Bedrock protocol.
+ *
+ * @deprecated since v1001
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
+@Deprecated
 public class CarefulRestorationEventData implements EventData {
     public static final CarefulRestorationEventData INSTANCE = new CarefulRestorationEventData();
 

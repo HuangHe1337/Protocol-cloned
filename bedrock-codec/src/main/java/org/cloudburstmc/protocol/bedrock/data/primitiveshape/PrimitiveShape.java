@@ -50,7 +50,7 @@ public class PrimitiveShape {
     /**
      * The optional maximum render distance of the shape.
      *
-     * @since v974
+     * @since v975
      */
     @Nullable
     private final Float maximumRenderDistance;
@@ -106,6 +106,30 @@ public class PrimitiveShape {
         SPHERE,
         CIRCLE,
         TEXT,
-        ARROW
+        ARROW,
+        /**
+         * A cylinder primitive.
+         *
+         * @since v1001
+         */
+        CYLINDER,
+        /**
+         * A pyramid primitive.
+         *
+         * @since v1001
+         */
+        PYRAMID,
+        /**
+         * An ellipsoid primitive.
+         *
+         * @since v1001
+         */
+        ELLIPSOID,
+        /**
+         * A cone primitive.
+         *
+         * @since v1001
+         */
+        CONE
     }
 }

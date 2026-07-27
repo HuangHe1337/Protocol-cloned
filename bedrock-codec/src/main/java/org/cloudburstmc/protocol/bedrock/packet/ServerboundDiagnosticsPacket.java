@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import org.cloudburstmc.protocol.bedrock.data.MemoryCategoryCounter;
+import org.cloudburstmc.protocol.bedrock.data.diagnostics.WhiskerScopeDataSummary;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,17 +61,23 @@ public class ServerboundDiagnosticsPacket implements BedrockPacket {
      */
     private final List<MemoryCategoryCounter> memoryCategoryValues = new ArrayList<>();
     /**
-     * Optional entity timing diagnostics.
+     * Entity timing diagnostics.
      *
-     * @since v974
+     * @since v975
      */
-    private EntityDiagnostics entityDiagnostics;
+    private final List<EntityDiagnostics> entityDiagnostics = new ArrayList<>();
     /**
-     * Optional system timing diagnostics.
+     * System timing diagnostics.
      *
-     * @since v974
+     * @since v975
      */
-    private SystemDiagnostics systemDiagnostics;
+    private final List<SystemDiagnostics> systemDiagnostics = new ArrayList<>();
+    /**
+     * A list of whisker profiler scope diagnostic summaries sent by the client.
+     *
+     * @since v1001
+     */
+    private final List<WhiskerScopeDataSummary> whiskerScopes = new ArrayList<>();
 
     @Override
     public PacketSignal handle(BedrockPacketHandler handler) {

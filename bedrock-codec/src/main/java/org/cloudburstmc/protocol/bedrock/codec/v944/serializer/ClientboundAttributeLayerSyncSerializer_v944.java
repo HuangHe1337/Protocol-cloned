@@ -23,20 +23,25 @@ public class ClientboundAttributeLayerSyncSerializer_v944 implements BedrockPack
     public void serialize(ByteBuf buffer, BedrockCodecHelper helper, ClientboundAttributeLayerSyncPacket packet) {
         AttributeLayerSyncPayload data = packet.getData();
 
-        if (data instanceof UpdateAttributeLayersData) {
-            VarInts.writeUnsignedInt(buffer, 0);
-            writeUpdateAttributeLayers(buffer, helper, (UpdateAttributeLayersData) data);
-        } else if (data instanceof UpdateAttributeLayerSettingsData) {
-            VarInts.writeUnsignedInt(buffer, 1);
-            writeUpdateAttributeLayerSettings(buffer, helper, (UpdateAttributeLayerSettingsData) data);
-        } else if (data instanceof UpdateEnvironmentAttributesData) {
-            VarInts.writeUnsignedInt(buffer, 2);
-            writeUpdateEnvironmentAttributes(buffer, helper, (UpdateEnvironmentAttributesData) data);
-        } else if (data instanceof RemoveEnvironmentAttributesData) {
-            VarInts.writeUnsignedInt(buffer, 3);
-            writeRemoveEnvironmentAttributes(buffer, helper, (RemoveEnvironmentAttributesData) data);
-        } else {
-            throw new IllegalArgumentException("Not oneOf<UpdateAttributeLayersData, UpdateAttributeLayerSettingsData, UpdateEnvironmentAttributesData, RemoveEnvironmentAttributesData>");
+        switch (data) {
+            case UpdateAttributeLayersData updateAttributeLayersData -> {
+                VarInts.writeUnsignedInt(buffer, 0);
+                writeUpdateAttributeLayers(buffer, helper, updateAttributeLayersData);
+            }
+            case UpdateAttributeLayerSettingsData updateAttributeLayerSettingsData -> {
+                VarInts.writeUnsignedInt(buffer, 1);
+                writeUpdateAttributeLayerSettings(buffer, helper, updateAttributeLayerSettingsData);
+            }
+            case UpdateEnvironmentAttributesData updateEnvironmentAttributesData -> {
+                VarInts.writeUnsignedInt(buffer, 2);
+                writeUpdateEnvironmentAttributes(buffer, helper, updateEnvironmentAttributesData);
+            }
+            case RemoveEnvironmentAttributesData removeEnvironmentAttributesData -> {
+                VarInts.writeUnsignedInt(buffer, 3);
+                writeRemoveEnvironmentAttributes(buffer, helper, removeEnvironmentAttributesData);
+            }
+            case null, default ->
+                    throw new IllegalArgumentException("Not oneOf<UpdateAttributeLayersData, UpdateAttributeLayerSettingsData, UpdateEnvironmentAttributesData, RemoveEnvironmentAttributesData>");
         }
     }
 
@@ -62,7 +67,7 @@ public class ClientboundAttributeLayerSyncSerializer_v944 implements BedrockPack
         throw new IllegalArgumentException(type + " is not oneOf<UpdateAttributeLayersData, UpdateAttributeLayerSettingsData, UpdateEnvironmentAttributesData, RemoveEnvironmentAttributesData>");
     }
 
-    private void writeUpdateAttributeLayers(ByteBuf buf, BedrockCodecHelper helper, UpdateAttributeLayersData data) {
+    protected void writeUpdateAttributeLayers(ByteBuf buf, BedrockCodecHelper helper, UpdateAttributeLayersData data) {
         List<AttributeLayerData> layers = data.attributeLayers();
         helper.writeArray(buf, layers, (b, layer) -> {
             helper.writeString(b, layer.layerName());
@@ -73,7 +78,7 @@ public class ClientboundAttributeLayerSyncSerializer_v944 implements BedrockPack
         });
     }
 
-    private UpdateAttributeLayersData readUpdateAttributeLayers(ByteBuf buf, BedrockCodecHelper helper) {
+    protected UpdateAttributeLayersData readUpdateAttributeLayers(ByteBuf buf, BedrockCodecHelper helper) {
         List<AttributeLayerData> layers = new ArrayList<>();
         helper.readArray(buf, layers, b -> {
             String name = helper.readStringMaxLen(buf, 128);
@@ -130,14 +135,14 @@ public class ClientboundAttributeLayerSyncSerializer_v944 implements BedrockPack
         return new RemoveEnvironmentAttributesData(name, dim, attrs);
     }
 
-    private void writeAttributeLayerSettings(ByteBuf buf, BedrockCodecHelper helper, AttributeLayerSettings s) {
+    protected void writeAttributeLayerSettings(ByteBuf buf, BedrockCodecHelper helper, AttributeLayerSettings s) {
         buf.writeIntLE(s.priority());
         writeWeight(buf, helper, s.weight());
         buf.writeBoolean(s.enabled());
         buf.writeBoolean(s.transitionsPaused());
     }
 
-    private AttributeLayerSettings readAttributeLayerSettings(ByteBuf buf, BedrockCodecHelper helper) {
+    protected AttributeLayerSettings readAttributeLayerSettings(ByteBuf buf, BedrockCodecHelper helper) {
         int priority = buf.readIntLE();
         AttributeLayerSettings.Weight weight = readWeight(buf, helper);
         boolean enabled = buf.readBoolean();
@@ -145,7 +150,7 @@ public class ClientboundAttributeLayerSyncSerializer_v944 implements BedrockPack
         return new AttributeLayerSettings(priority, weight, enabled, paused);
     }
 
-    private void writeWeight(ByteBuf buf, BedrockCodecHelper helper, AttributeLayerSettings.Weight w) {
+    protected void writeWeight(ByteBuf buf, BedrockCodecHelper helper, AttributeLayerSettings.Weight w) {
         if (w instanceof AttributeLayerSettings.FloatWeight) {
             VarInts.writeUnsignedInt(buf, 0);
             buf.writeFloatLE(((AttributeLayerSettings.FloatWeight) w).value());
@@ -157,18 +162,16 @@ public class ClientboundAttributeLayerSyncSerializer_v944 implements BedrockPack
         }
     }
 
-    private AttributeLayerSettings.Weight readWeight(ByteBuf buf, BedrockCodecHelper helper) {
+    protected AttributeLayerSettings.Weight readWeight(ByteBuf buf, BedrockCodecHelper helper) {
         int type = VarInts.readUnsignedInt(buf);
-        switch (type) {
-            case 0:
-                return new AttributeLayerSettings.FloatWeight(buf.readFloatLE());
-            case 1:
-                return new AttributeLayerSettings.StringWeight(helper.readString(buf));
-        }
-        throw new IllegalArgumentException("Unknown Weight type: " + type);
+        return switch (type) {
+            case 0 -> new AttributeLayerSettings.FloatWeight(buf.readFloatLE());
+            case 1 -> new AttributeLayerSettings.StringWeight(helper.readString(buf));
+            default -> throw new IllegalArgumentException("Unknown Weight type: " + type);
+        };
     }
 
-    private void writeEnvironmentAttribute(ByteBuf buf, BedrockCodecHelper helper, EnvironmentAttributeData e) {
+    protected void writeEnvironmentAttribute(ByteBuf buf, BedrockCodecHelper helper, EnvironmentAttributeData e) {
         helper.writeString(buf, e.attributeName());
         helper.writeOptionalNull(buf, e.from(), (b, attr) -> writeAttributeData(b, helper, attr));
         writeAttributeData(buf, helper, e.attribute());
@@ -178,7 +181,7 @@ public class ClientboundAttributeLayerSyncSerializer_v944 implements BedrockPack
         helper.writeString(buf, e.easing().getSerializeName());
     }
 
-    private EnvironmentAttributeData readEnvironmentAttribute(ByteBuf buf, BedrockCodecHelper helper) {
+    protected EnvironmentAttributeData readEnvironmentAttribute(ByteBuf buf, BedrockCodecHelper helper) {
         String name = helper.readStringMaxLen(buf, 128);
 
         AttributeData from = helper.readOptional(buf, null, b -> readAttributeData(b, helper));
@@ -197,51 +200,50 @@ public class ClientboundAttributeLayerSyncSerializer_v944 implements BedrockPack
     private static final List<String> FLOAT_OPERATIONS = Arrays.asList("override", "alpha_blend", "add", "subtract", "multiply", "minimum", "maximum");
     private static final List<String> COLOR_OPERATIONS = Arrays.asList("override", "alpha_blend", "add", "subtract", "multiply");
 
-    private void writeAttributeData(ByteBuf buf, BedrockCodecHelper helper, AttributeData data) {
-        if (data instanceof BoolAttributeData) {
-            BoolAttributeData at = (BoolAttributeData) data;
-            VarInts.writeUnsignedInt(buf, 0);
-            buf.writeBoolean(at.value());
-            helper.writeString(buf, BOOL_OPERATIONS.get(at.operation().ordinal()));
-        } else if (data instanceof FloatAttributeData) {
-            FloatAttributeData at = (FloatAttributeData) data;
-            VarInts.writeUnsignedInt(buf, 1);
-            buf.writeFloatLE(at.value());
-            helper.writeString(buf, FLOAT_OPERATIONS.get(at.operation().ordinal()));
-            helper.writeOptionalNull(buf, at.constraintMin(), ByteBuf::writeFloatLE);
-            helper.writeOptionalNull(buf, at.constraintMax(), ByteBuf::writeFloatLE);
-        } else if (data instanceof ColorAttributeData) {
-            ColorAttributeData at = (ColorAttributeData) data;
-            VarInts.writeUnsignedInt(buf, 2);
-            writeColor255(buf, helper, at.value());
-            helper.writeString(buf, COLOR_OPERATIONS.get(at.operation().ordinal()));
-        } else {
-            throw new IllegalArgumentException("Unknown AttributeData: " + data);
+    protected void writeAttributeData(ByteBuf buf, BedrockCodecHelper helper, AttributeData data) {
+        switch (data) {
+            case BoolAttributeData(boolean value2, BoolAttributeData.Operation operation2) -> {
+                VarInts.writeUnsignedInt(buf, 0);
+                buf.writeBoolean(value2);
+                helper.writeString(buf, BOOL_OPERATIONS.get(operation2.ordinal()));
+            }
+            case FloatAttributeData(
+                    float value1, FloatAttributeData.Operation operation1, Float constraintMin, Float constraintMax
+            ) -> {
+                VarInts.writeUnsignedInt(buf, 1);
+                buf.writeFloatLE(value1);
+                helper.writeString(buf, FLOAT_OPERATIONS.get(operation1.ordinal()));
+                helper.writeOptionalNull(buf, constraintMin, ByteBuf::writeFloatLE);
+                helper.writeOptionalNull(buf, constraintMax, ByteBuf::writeFloatLE);
+            }
+            case ColorAttributeData(ColorAttributeData.Color255RGBA value, ColorAttributeData.Operation operation) -> {
+                VarInts.writeUnsignedInt(buf, 2);
+                writeColor255(buf, helper, value);
+                helper.writeString(buf, COLOR_OPERATIONS.get(operation.ordinal()));
+            }
+            case null, default -> throw new IllegalArgumentException("Unknown AttributeData: " + data);
         }
     }
 
-    private AttributeData readAttributeData(ByteBuf buf, BedrockCodecHelper helper) {
+    protected AttributeData readAttributeData(ByteBuf buf, BedrockCodecHelper helper) {
         int type = VarInts.readUnsignedInt(buf);
-        switch (type) {
-            case 0:
-                return new BoolAttributeData(
+        return switch (type) {
+            case 0 -> new BoolAttributeData(
                     buf.readBoolean(),
                     BoolAttributeData.Operation.values()[BOOL_OPERATIONS.indexOf(helper.readString(buf))]
-                );
-            case 1:
-                return new FloatAttributeData(
+            );
+            case 1 -> new FloatAttributeData(
                     buf.readFloatLE(),
                     FloatAttributeData.Operation.values()[FLOAT_OPERATIONS.indexOf(helper.readString(buf))],
                     helper.readOptional(buf, null, ByteBuf::readFloatLE),
                     helper.readOptional(buf, null, ByteBuf::readFloatLE)
-                );
-            case 2:
-                return new ColorAttributeData(
+            );
+            case 2 -> new ColorAttributeData(
                     readColor255(buf, helper),
                     ColorAttributeData.Operation.values()[COLOR_OPERATIONS.indexOf(helper.readString(buf))]
-                );
-        }
-        throw new IllegalArgumentException("Unknown AttributeData type: " + type);
+            );
+            default -> throw new IllegalArgumentException("Unknown AttributeData type: " + type);
+        };
     }
 
     private void writeColor255(ByteBuf buf, BedrockCodecHelper helper, ColorAttributeData.Color255RGBA c) {

@@ -14,7 +14,13 @@ public enum MovementEffectType {
 
     INVALID(-1),
     GLIDE_BOOST(0),
-    DOLPHIN_BOOST(1);
+    DOLPHIN_BOOST(1),
+    /**
+     * A movement boost applied by a geyser.
+     *
+     * @since v1001
+     */
+    GEYSER_BOOST(2);
 
     /**
      * The ID.

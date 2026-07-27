@@ -13,8 +13,16 @@ import org.cloudburstmc.protocol.bedrock.data.camera.CameraEase;
  * @param CurrentTransitionTicks The current transition tick count.
  * @param TotalTransitionTicks   The total transition tick count.
  * @param easing                 The easing.
+ * @param localTransitionTicks   The number of ticks elapsed in the local transition since v1001.
+ * @param noiseTransition        Whether the transition uses noise since v1001.
  */
 public record EnvironmentAttributeData(String attributeName, @Nullable AttributeData from, AttributeData attribute,
                                        @Nullable AttributeData to, int CurrentTransitionTicks,
-                                       int TotalTransitionTicks, CameraEase easing) {
+                                       int TotalTransitionTicks, CameraEase easing,
+                                       int localTransitionTicks, boolean noiseTransition) {
+    public EnvironmentAttributeData(String attributeName, @Nullable AttributeData from, AttributeData attribute,
+                                    @Nullable AttributeData to, int CurrentTransitionTicks,
+                                    int TotalTransitionTicks, CameraEase easing) {
+        this(attributeName, from, attribute, to, CurrentTransitionTicks, TotalTransitionTicks, easing, 0, false);
+    }
 }
